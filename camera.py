@@ -75,7 +75,7 @@ class USBCamera:
         cv2.destroyAllWindows()
 
 
-# ================= MAIN LOOP =================
+# ================= MAIN LOOP =================       #for testing
 cam = USBCamera(cam_index=2)  # <-- USB Rapoo camera
 
 print("Press 'q' to quit")

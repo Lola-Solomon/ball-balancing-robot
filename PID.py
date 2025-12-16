@@ -57,6 +57,3 @@ class pid:
         self.last_time=current_time
 
         return theta,phi
-
-    
-        
