@@ -9,11 +9,11 @@ class BBrobot:
         # Prepare the servos
         self.servos = cs.ArduinoServo()
         # Link lengths L = [base, lower link, upper link, top]
-        self.L = [0.04, 0.04, 0.065, 0.065]
+        self.L = [0.05, 0.045, 0.095, 0.08]
         # Initial posture (theta, phi, pz)
-        self.ini_pos = [0, 0, 0.0632]
-        self.pz_max = 0.0732
-        self.pz_min = 0.0532
+        self.ini_pos = [0, 0, 0.0832]
+        self.pz_max = 0.0932
+        self.pz_min = 0.0732
         self.phi_max = 20
 
     # Method to prepare the robot
