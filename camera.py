@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
 
-
 class USBCamera:
-    def __init__(self, cam_index=2):
+    def __init__(self, cam_index=0):
         # Open USB camera using V4L2 (IMPORTANT on Ubuntu)
         self.cap = cv2.VideoCapture(cam_index, cv2.CAP_V4L2)
 
@@ -76,7 +75,7 @@ class USBCamera:
 
 
 # ================= MAIN LOOP =================       #for testing
-cam = USBCamera(cam_index=2)  # <-- USB Rapoo camera
+cam = USBCamera()  # <-- USB Rapoo camera
 
 print("Press 'q' to quit")
 
