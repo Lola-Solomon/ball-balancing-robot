@@ -4,6 +4,7 @@ import PID
 import time
 import threading
 import numpy as np
+import cv2
 
 # Image size (height, width) and number of channels (here 3 channels = RGB)
 height = 480
@@ -77,20 +78,49 @@ def cont_rob():
             rob_start_time = rob_end_time
             rob_frame_count = 0
 
+def stream():
+    while True:
+        frame = Camera.take_pic()
+        if frame is None:
+            continue
+
+        x, y, area = Camera.find_ball(frame)
+
+        # Draw image center
+        cx = Camera.width // 2
+        cy = Camera.height // 2
+        cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
+
+        # Show video
+        cv2.imshow("Red Ball Tracking", frame)
+
+        # Print ball coordinates
+        if area > 0:
+            print(f"Ball position (centered): x={x}, y={y}, area={area}")
+
+        # Exit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    Camera.clean_up_cam()
+
 try:
     camera_thread = threading.Thread(target=get_img)
     rob_thread = threading.Thread(target=cont_rob)
+    stream_thread = threading.Thread(target=stream)
     camera_thread.start()
     rob_thread.start()
-
+    # stream_thread.start()
+    
     while(1):
         Current_value = [x, y, area]
         if x != -1:
             theta, phi = pid.compute(goal, Current_value)
             pos = [theta, phi, pz_ini]
-            Robot.control_t_posture(pos, 0.01)
+            Robot.control_t_posture(pos, 0.001)
 
-        print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
+        # print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
+        print(f"error_x: {pid.prev_error_x}, error_y: {pid.prev_error_y}")
 
 finally:
     Robot.clean_up()

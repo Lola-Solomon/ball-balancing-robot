@@ -11,10 +11,10 @@ class BBrobot:
         # Link lengths L = [base, lower link, upper link, top]
         self.L = [0.05, 0.045, 0.095, 0.08]
         # Initial posture (theta, phi, pz)
-        self.ini_pos = [0, 0, 0.0832]
-        self.pz_max = 0.0932
-        self.pz_min = 0.0732
-        self.phi_max = 20
+        self.ini_pos = [0, 0, 0.11]
+        self.pz_max = 0.11
+        self.pz_min = 0.1
+        self.phi_max = 15
 
     # Method to prepare the robot
     def set_up(self):
@@ -125,7 +125,7 @@ class BBrobot:
 
         self.servos.control_time_rotate(self.ids[0],angles[0], t)
         self.servos.control_time_rotate(self.ids[1],angles[1], t)
-        self.servos.control_time_rotate(self.ids[2],angles[2], t)
+        self.servos.control_time_rotate(self.ids[2],angles[2]-3.9, t)
 
         time.sleep(t)
     
@@ -133,3 +133,17 @@ class BBrobot:
         pos = self.ini_pos
         t = 1
         self.control_t_posture(pos, t)
+
+test_pos = BBrobot([1,2,3])
+test_pos.set_up()
+test_pos.Initialize_posture()
+
+# test_pos.control_t_posture([0,-15,0.11],0.05)
+
+# for i in range(-15,15):
+#     test_pos.control_t_posture([0,i,0.15],0.05)
+#     # time.sleep(2)
+
+# for i in range(0,360):
+#     test_pos.control_t_posture([i,15,0.12],0.05)
+#     # time.sleep(2)

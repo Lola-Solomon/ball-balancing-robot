@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 class USBCamera:
-    def __init__(self, cam_index=0):
+    def __init__(self, cam_index=2):
         # Open USB camera using V4L2 (IMPORTANT on Ubuntu)
         self.cap = cv2.VideoCapture(cam_index, cv2.CAP_V4L2)
 
@@ -75,31 +75,31 @@ class USBCamera:
 
 
 # ================= MAIN LOOP =================       #for testing
-cam = USBCamera()  # <-- USB Rapoo camera
+# cam = USBCamera()  # <-- USB Rapoo camera
 
-print("Press 'q' to quit")
+# print("Press 'q' to quit")
 
-while True:
-    frame = cam.take_pic()
-    if frame is None:
-        continue
+# while True:
+#     frame = cam.take_pic()
+#     if frame is None:
+#         continue
 
-    x, y, area = cam.find_ball(frame)
+#     x, y, area = cam.find_ball(frame)
 
-    # Draw image center
-    cx = cam.width // 2
-    cy = cam.height // 2
-    cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
+#     # Draw image center
+#     cx = cam.width // 2
+#     cy = cam.height // 2
+#     cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
 
-    # Show video
-    cv2.imshow("Red Ball Tracking", frame)
+#     # Show video
+#     cv2.imshow("Red Ball Tracking", frame)
 
-    # Print ball coordinates
-    if area > 0:
-        print(f"Ball position (centered): x={x}, y={y}, area={area}")
+#     # Print ball coordinates
+#     if area > 0:
+#         print(f"Ball position (centered): x={x}, y={y}, area={area}")
 
-    # Exit
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+#     # Exit
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
 
-cam.clean_up_cam()
+# cam.clean_up_cam()

@@ -23,9 +23,9 @@ class pid:
     def compute(self,goal,current_value):
 
         #calculating time to obtain dt
-        current_time=time.pref_counter()
+        current_time=time.perf_counter()
         if self.last_time is None:
-            self.last_time is None=current_time
+            self.last_time =current_time
             return 0,0
         
         dt=(current_time - self.last_time)
