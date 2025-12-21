@@ -19,9 +19,9 @@ image = np.zeros((height, width, channels), dtype=np.uint8)
 ids = [1, 2, 3]
 
 # PID gains and coefficient that determines the magnitude of phi
-K_PID = [0.015, 0.0001, 0.0051]  # 0.015, 0.0001, 0.0051
-k = 1
-a = 1
+K_PID = [0.3, 0, 0]  # 0.015, 0.0001, 0.0051
+k = 0.044117647
+a = 2
 
 # Instantiate the robot, camera, and PID controller
 Robot = class_BBRobot.BBrobot(ids)
@@ -46,7 +46,7 @@ rob_fps = 0
 x = -1
 y = -1
 area = -1
-goal = [100, 0]
+goal = [0, 0]
 
 def get_img():
     global image, img_fps, img_start_time
@@ -110,17 +110,46 @@ try:
     stream_thread = threading.Thread(target=stream)
     camera_thread.start()
     rob_thread.start()
-    # stream_thread.start()
+    #stream_thread.start()
     
     while(1):
-        Current_value = [x, y, area]
-        if x != -1:
-            theta, phi = pid.compute(goal, Current_value)
-            pos = [theta, phi, pz_ini]
-            Robot.control_t_posture(pos, 0.001)
+        # Current_value = [x, y, area]
+        # if x != -1:
+        #     theta, phi = pid.compute(goal, Current_value)
+        #     pos = [theta, phi, pz_ini]
+        #     Robot.control_t_posture(pos, 0.001)
+
+        # 1. Check if ball is detected
+        if x == -1 or y == -1:
+            #print("⚠️ Ball lost — PID paused")
+            pid.integral_x = 0
+            pid.integral_y = 0
+            continue
+
+        # 2. Compute PID
+        theta, phi = pid.compute(goal, [x, y])
+
+
+        # 3. Print BEFORE motion
+        print(
+            f"Ball(x={x:.1f}, y={y:.1f}) | "
+            f"Error(ex={goal[0]-x:.1f}, ey={goal[1]-y:.1f}) | "
+            f"Cmd(theta={theta:.1f}, phi={phi:.2f})"
+        )
+
+        # 4. Limit phi (VERY IMPORTANT)
+        # phi = max(min(phi, 5.0), 0.0)
+
+        # 5. Command robot
+        Robot.control_t_posture([theta, phi, pz_ini], 0.01)
+
 
         # print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
-        print(f"error_x: {pid.prev_error_x}, error_y: {pid.prev_error_y}")
+        
+
+
+
+        #print(f"error_x: {pid.prev_error_x}, error_y: {pid.prev_error_y}")
 
 finally:
     Robot.clean_up()

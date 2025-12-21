@@ -1,20 +1,25 @@
 import class_servo as cs
 import math
 import time
+import threading
 
 class BBrobot:
     # Create the structure of the robot
     def __init__(self, ids):  # Receives a list of servo IDs
         self.ids = ids 
         # Prepare the servos
-        self.servos = cs.ArduinoServo()
+        self.servos = cs.ArduinoServo() 
         # Link lengths L = [base, lower link, upper link, top]
         self.L = [0.05, 0.045, 0.095, 0.08]
         # Initial posture (theta, phi, pz)
         self.ini_pos = [0, 0, 0.11]
-        self.pz_max = 0.11
+        self.pz_max = 0.13
         self.pz_min = 0.1
         self.phi_max = 15
+        #servo axis
+        self.SERVO_X = self.ids[0]   # ده السيرفو اللي ذراعه باصص في +X_base
+        self.SERVO_Y = self.ids[1]
+        self.SERVO_Z = self.ids[2]
 
     # Method to prepare the robot
     def set_up(self):
@@ -123,22 +128,48 @@ class BBrobot:
         n = [x, y, z]
         angles = self.kinema_inv(n, Pz)
 
-        self.servos.control_time_rotate(self.ids[0],angles[0], t)
-        self.servos.control_time_rotate(self.ids[1],angles[1], t)
-        self.servos.control_time_rotate(self.ids[2],angles[2]-3.9, t)
+        angles = [int(angles[0])+2, int(angles[1])-3.5, int(angles[2])-7]
+        self.servos.control_time_rotate_sync(angles, 1.0)
 
-        time.sleep(t)
+        print("phi: ",phi)
+
+        # self.servos.control_time_rotate(self.ids[0],angles[0]+3, t)
+        # self.servos.control_time_rotate(self.ids[1],angles[1]-3.5, t)
+        # self.servos.control_time_rotate(self.ids[2],angles[2]-8, t)
     
     def Initialize_posture(self):
         pos = self.ini_pos
-        t = 1
+        t = 0.005
         self.control_t_posture(pos, t)
 
 test_pos = BBrobot([1,2,3])
 test_pos.set_up()
 test_pos.Initialize_posture()
 
-# test_pos.control_t_posture([0,-15,0.11],0.05)
+
+#test_pos.control_t_posture([0,0,0.11],2)    # ball must stay still
+#test_pos.control_t_posture([0,0,0.11],3)
+# test_pos.control_t_posture([0,2,0.11],3)
+# test_pos.control_t_posture([0,0,0.11],3)
+
+
+#test_pos.control_t_posture([10,0,0.12],1)
+#test_pos.control_t_posture([10,0,0.105],1)
+# test_pos.control_t_posture([0,2,0.10],1)
+# test_pos.control_t_posture([90,2,0.10],1)
+#test_pos.control_t_posture([0,-15,0.11],1)
+#test_pos.control_t_posture([0,0,0.11],0.005)
+
+
+# test_pos.control_t_posture([0,0,0.1],1)
+# test_pos.control_t_posture([0,0,0.11],1)
+# test_pos.control_t_posture([0,0,0.1],1)
+# test_pos.control_t_posture([0,0,0.11],1)
+# test_pos.control_t_posture([0,0,0.1],0.1)
+# test_pos.control_t_posture([0,0,0.11],0.1)
+# test_pos.control_t_posture([0,0,0.1],0.1)
+# test_pos.control_t_posture([0,0,0.11],0.05)
+
 
 # for i in range(-15,15):
 #     test_pos.control_t_posture([0,i,0.15],0.05)

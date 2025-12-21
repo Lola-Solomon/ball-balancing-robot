@@ -34,7 +34,11 @@ class pid:
         error_y=goal[1]-current_value[1]
         #integral error
         self.integral_x+=error_x*dt
-        self.integral_x+=error_x*dt
+        self.integral_y+=error_y*dt
+
+        I_MAX = 50
+        self.integral_x = max(min(self.integral_x, I_MAX), -I_MAX)
+        self.integral_y = max(min(self.integral_y, I_MAX), -I_MAX)
         #derivative error
         der_x=(error_x - self.prev_error_x)/dt
         der_y=(error_y - self.prev_error_y)/dt
@@ -49,6 +53,8 @@ class pid:
         if theta < 0:
             theta += 360
         phi = self.v* math.sqrt(output_x**2 + output_y**2)
+
+        print("output_x: ", output_x, " output_y: ",output_y)
 
         self.prev_error_x=error_x
         self.prev_error_y=error_y
