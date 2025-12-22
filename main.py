@@ -4,150 +4,114 @@ import PID
 import time
 import threading
 import numpy as np
-import cv2
 
-# Image size (height, width) and number of channels (here 3 channels = RGB)
-height = 480
-width = 640
-channels = 3
-
-# Create an empty image (all pixels set to 0)
-image = np.zeros((height, width, channels), dtype=np.uint8)
-
-
-# Servo IDs used for the robot
+# ===================== CONFIG =====================
 ids = [1, 2, 3]
 
-# PID gains and coefficient that determines the magnitude of phi
-K_PID = [0.105, 0, 0]  # 0.015, 0.0001, 0.0051
+K_PID = [0.105, 0, 0]
 k = 0.044117647
 a = 2
 
-# Instantiate the robot, camera, and PID controller
+BALL_AREA_THRESHOLD = 1500
+CONTROL_DT = 0.05
+
+# ===================== SHARED VARIABLES =====================
+lock = threading.Lock()
+
+image = None
+x, y, area = -1, -1, 0
+
+# ===================== STATE =====================
+STATE_SEARCH = 0
+STATE_TRACK  = 1
+state = STATE_SEARCH
+
+# ===================== INIT =====================
 Robot = class_BBRobot.BBrobot(ids)
 Camera = camera.USBCamera()
 pid = PID.pid(K_PID, k, a)
 
-# Prepare the robot and move it to the initial position
 Robot.set_up()
 Robot.Initialize_posture()
 pz_ini = Robot.ini_pos[2]
-    
-frame_count = 0
-start_time = time.time()
-img_start_time = time.time()
-rob_start_time = time.time()
-fps = 0  # Initialize fps to 0
-img_fps = 0
-rob_fps = 0
 
-
-# Ball coordinates
-x = -1
-y = -1
-area = -1
 goal = [0, 0]
 
+print("✅ System initialized")
+
+# ===================== THREADS (OLD NAMES) =====================
 def get_img():
-    global image, img_fps, img_start_time
-    img_frame_count = 0
-    while(1):
-        image = Camera.take_pic()
-
-        # Calculate image FPS
-        img_frame_count += 1
-        if img_frame_count == 100:
-            img_end_time = time.time()
-            img_elapsed_time = img_end_time - img_start_time
-            img_fps = 100 / img_elapsed_time
-            img_start_time = img_end_time
-            img_frame_count = 0
-
-def cont_rob():
-    global x, y, area, rob_fps, rob_start_time
-    rob_frame_count = 0
-    while(1):
-        x, y, area = Camera.find_ball(image)
-
-        # Calculate robot control FPS
-        rob_frame_count += 1
-        if rob_frame_count == 100:
-            rob_end_time = time.time()
-            rob_elapsed_time = rob_end_time - rob_start_time
-            rob_fps = 100 / rob_elapsed_time
-            rob_start_time = rob_end_time
-            rob_frame_count = 0
-
-def stream():
+    """Camera acquisition thread"""
+    global image
     while True:
         frame = Camera.take_pic()
-        if frame is None:
-            continue
+        if frame is not None:
+            with lock:
+                image = frame.copy()
+        time.sleep(0.002)
 
-        x, y, area = Camera.find_ball(frame)
+def cont_rob():
+    """Vision processing thread"""
+    global x, y, area
+    while True:
+        with lock:
+            if image is None:
+                continue
+            img = image.copy()
 
-        # Draw image center
-        cx = Camera.width // 2
-        cy = Camera.height // 2
-        cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
+        bx, by, barea = Camera.find_ball(img)
 
-        # Show video
-        cv2.imshow("Red Ball Tracking", frame)
+        with lock:
+            x, y, area = bx, by, barea
 
-        # Print ball coordinates
-        if area > 0:
-            print(f"Ball position (centered): x={x}, y={y}, area={area}")
+        time.sleep(0.002)
 
-        # Exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+# ===================== START THREADS =====================
+threading.Thread(target=get_img, daemon=True).start()
+threading.Thread(target=cont_rob, daemon=True).start()
 
-    Camera.clean_up_cam()
-
+# ===================== MAIN CONTROL LOOP =====================
 try:
-    camera_thread = threading.Thread(target=get_img)
-    rob_thread = threading.Thread(target=cont_rob)
-    stream_thread = threading.Thread(target=stream)
-    camera_thread.start()
-    rob_thread.start()
-    #stream_thread.start()
-    
-    while(1):
-        # Current_value = [x, y, area]
-        # if x != -1:
-        #     theta, phi = pid.compute(goal, Current_value)
-        #     pos = [theta, phi, pz_ini]
-        #     Robot.control_t_posture(pos, 0.001)
+    while True:
+        with lock:
+            bx, by, barea = x, y, area
 
-        # 1. Check if ball is detected
-        # if x == -1 or y == -1:
-        #     #print("⚠️ Ball lost — PID paused")
-        #     pid.integral_x = 0
-        #     pid.integral_y = 0
-        #     continue
+        # ---------- SEARCH ----------
+        if state == STATE_SEARCH:
+            pid.integral_x = 0
+            pid.integral_y = 0
 
-        # 2. Compute PID
-        theta, phi = pid.compute(goal, [x, y])
+            if barea > BALL_AREA_THRESHOLD:
+                state = STATE_TRACK
+                print("🎯 Ball detected → TRACK")
 
+        # ---------- TRACK ----------
+        elif state == STATE_TRACK:
+            if barea < BALL_AREA_THRESHOLD:
+                state = STATE_SEARCH
+                pid.integral_x = 0
+                pid.integral_y = 0
+                print("⚠️ Ball lost → SEARCH")
+                time.sleep(CONTROL_DT)
+                continue
 
-        # 3. Print BEFORE motion
-        print(
-            f"Ball(x={x:.1f}, y={y:.1f}) | "
-            f"Error(ex={goal[0]-x:.1f}, ey={goal[1]-y:.1f}) | "
-            f"Cmd(theta={theta:.1f}, phi={phi:.2f})"
-        )
+            # PID compute
+            theta, phi = pid.compute(goal, [bx, by])
 
-        # 4. Limit phi (VERY IMPORTANT)
-        # phi = max(min(phi, 5.0), 0.0)
+            # Safety clamp (IMPORTANT)
+            phi = max(min(phi, 5.0), -5.0)
 
-        # 5. Command robot
-        Robot.control_t_posture([theta, phi, pz_ini], 0.05)
+            print(
+                f"Ball(x={bx:.1f}, y={by:.1f}, area={barea}) | "
+                f"Cmd(theta={theta:.2f}, phi={phi:.2f})"
+            )
 
+            Robot.control_t_posture([theta, phi, pz_ini], CONTROL_DT)
 
-        # print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
-        
-        #print(f"error_x: {pid.prev_error_x}, error_y: {pid.prev_error_y}")
+        time.sleep(CONTROL_DT)
 
+# ===================== CLEAN EXIT =====================
 finally:
+    print("🛑 Shutting down safely")
     Robot.clean_up()
     Camera.clean_up_cam()
