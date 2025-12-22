@@ -4,7 +4,7 @@ import time
 class ArduinoServo:
     def __init__(self, port='/dev/ttyACM0', baud=115200):
         self.ser = serial.Serial(port, baud, timeout=1)
-        time.sleep(1)
+        time.sleep(0.3)
 
     def trq_set(self, servo_id, status):
         cmd = f"T,{servo_id},{status}\n"
@@ -51,20 +51,22 @@ class ArduinoServo:
 
 # test_servo.control_time_rotate_sync(sync_angles, 1)
 
-test_servo = ArduinoServo()
+# test_servo = ArduinoServo()
 
-time.sleep(1.5)  # مهم بعد فتح الـ serial
+# # time.sleep(1.5)  # مهم بعد فتح الـ serial
 
-# Torque ON
-test_servo.trq_set(1, 1)
-test_servo.trq_set(2, 1)
-test_servo.trq_set(3, 1)
+# # Torque ON
+# test_servo.trq_set(1, 1)
+# test_servo.trq_set(2, 1)
+# test_servo.trq_set(3, 1)
 
-time.sleep(0.3)
+# time.sleep(0.3)
 
-# IMPORTANT: int angles only
-sync_angles = [10, 10, 10]
+# test_angle = 20
 
-test_servo.control_time_rotate_sync(sync_angles, 1.0)
+# # IMPORTANT: int angles only
+# sync_angles = [test_angle+14, test_angle+11, test_angle+1]
+
+# test_servo.control_time_rotate_sync(sync_angles, 1.0)
 
 

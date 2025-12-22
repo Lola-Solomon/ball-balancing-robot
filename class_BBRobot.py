@@ -13,7 +13,7 @@ class BBrobot:
         self.L = [0.05, 0.045, 0.095, 0.08]
         # Initial posture (theta, phi, pz)
         self.ini_pos = [0, 0, 0.11]
-        self.pz_max = 0.13
+        self.pz_max = 0.15
         self.pz_min = 0.1
         self.phi_max = 15
         #servo axis
@@ -27,6 +27,8 @@ class BBrobot:
         self.servos.trq_set(self.ids[0],1)
         self.servos.trq_set(self.ids[1],1)
         self.servos.trq_set(self.ids[2],1)
+
+        time.sleep(0.3)
         
     # Method to clean up the robot
     def clean_up(self):
@@ -128,8 +130,8 @@ class BBrobot:
         n = [x, y, z]
         angles = self.kinema_inv(n, Pz)
 
-        angles = [int(angles[0])+2, int(angles[1])-3.5, int(angles[2])-7]
-        self.servos.control_time_rotate_sync(angles, 1.0)
+        angles = [int(angles[0])+14, int(angles[1])+11, int(angles[2])+1]
+        self.servos.control_time_rotate_sync(angles, t)
 
         print("phi: ",phi)
 
@@ -139,15 +141,15 @@ class BBrobot:
     
     def Initialize_posture(self):
         pos = self.ini_pos
-        t = 0.005
+        t = 0.05
         self.control_t_posture(pos, t)
 
-test_pos = BBrobot([1,2,3])
-test_pos.set_up()
-test_pos.Initialize_posture()
+# test_pos = BBrobot([1,2,3])
+# test_pos.set_up()
+# test_pos.Initialize_posture()
 
 
-#test_pos.control_t_posture([0,0,0.11],2)    # ball must stay still
+# test_pos.control_t_posture([0,0,0.11],2)    # ball must stay still
 #test_pos.control_t_posture([0,0,0.11],3)
 # test_pos.control_t_posture([0,2,0.11],3)
 # test_pos.control_t_posture([0,0,0.11],3)

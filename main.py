@@ -19,7 +19,7 @@ image = np.zeros((height, width, channels), dtype=np.uint8)
 ids = [1, 2, 3]
 
 # PID gains and coefficient that determines the magnitude of phi
-K_PID = [0.3, 0, 0]  # 0.015, 0.0001, 0.0051
+K_PID = [0.105, 0, 0]  # 0.015, 0.0001, 0.0051
 k = 0.044117647
 a = 2
 
@@ -120,11 +120,11 @@ try:
         #     Robot.control_t_posture(pos, 0.001)
 
         # 1. Check if ball is detected
-        if x == -1 or y == -1:
-            #print("⚠️ Ball lost — PID paused")
-            pid.integral_x = 0
-            pid.integral_y = 0
-            continue
+        # if x == -1 or y == -1:
+        #     #print("⚠️ Ball lost — PID paused")
+        #     pid.integral_x = 0
+        #     pid.integral_y = 0
+        #     continue
 
         # 2. Compute PID
         theta, phi = pid.compute(goal, [x, y])
@@ -141,14 +141,11 @@ try:
         # phi = max(min(phi, 5.0), 0.0)
 
         # 5. Command robot
-        Robot.control_t_posture([theta, phi, pz_ini], 0.01)
+        Robot.control_t_posture([theta, phi, pz_ini], 0.05)
 
 
         # print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
         
-
-
-
         #print(f"error_x: {pid.prev_error_x}, error_y: {pid.prev_error_y}")
 
 finally:
