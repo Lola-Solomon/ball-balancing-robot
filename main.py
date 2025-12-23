@@ -8,12 +8,12 @@ import numpy as np
 # ===================== CONFIG =====================
 ids = [1, 2, 3]
 
-K_PID = [0.105, 0, 0]
-k = 0.044117647
-a = 2
+K_PID = [0.9, 0.8, 1]
+k = 0.005
+a = 1
 
 BALL_AREA_THRESHOLD = 1500
-CONTROL_DT = 0.05
+CONTROL_DT = 0.00001
 
 # ===================== SHARED VARIABLES =====================
 lock = threading.Lock()
@@ -48,7 +48,7 @@ def get_img():
         if frame is not None:
             with lock:
                 image = frame.copy()
-        time.sleep(0.002)
+        # time.sleep(0.002)
 
 def cont_rob():
     """Vision processing thread"""
@@ -64,13 +64,16 @@ def cont_rob():
         with lock:
             x, y, area = bx, by, barea
 
-        time.sleep(0.002)
+        # time.sleep(0.002)
 
 # ===================== START THREADS =====================
 threading.Thread(target=get_img, daemon=True).start()
 threading.Thread(target=cont_rob, daemon=True).start()
 
 # ===================== MAIN CONTROL LOOP =====================
+PRINT_EVERY = 5  # print every N loops
+loop_counter = 0
+
 try:
     while True:
         with lock:
@@ -92,21 +95,26 @@ try:
                 pid.integral_x = 0
                 pid.integral_y = 0
                 print("⚠️ Ball lost → SEARCH")
-                time.sleep(CONTROL_DT)
+                # time.sleep(CONTROL_DT)
                 continue
 
             # PID compute
             theta, phi = pid.compute(goal, [bx, by])
+            print("bx",bx,"by",by)
 
             # Safety clamp (IMPORTANT)
-            phi = max(min(phi, 5.0), -5.0)
+            phi = max(min(phi, 2.0), -2.0)
 
-            print(
-                f"Ball(x={bx:.1f}, y={by:.1f}, area={barea}) | "
-                f"Cmd(theta={theta:.2f}, phi={phi:.2f})"
-            )
-
+            # Command robot
             Robot.control_t_posture([theta, phi, pz_ini], CONTROL_DT)
+
+            # Print less frequently
+            loop_counter += 1
+            if loop_counter % PRINT_EVERY == 0:
+                print(
+                    f"Ball(x={bx:.1f}, y={by:.1f}, area={barea}) | "
+                    f"Cmd(theta={theta:.2f}, phi={phi:.2f})"
+                )
 
         time.sleep(CONTROL_DT)
 

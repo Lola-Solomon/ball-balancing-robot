@@ -17,13 +17,13 @@ void setup() {
 }
 
 void loop() {
-  String cmd = "S,{10},{10},{10},{0.5}\n";
-  parseCommand(cmd);
-  // if (Serial.available()) {
-  //   String cmd = "S,{15},{15},{15},{0.5}\n"
-  //   // String cmd = Serial.readStringUntil('\n');
-  //   parseCommand(cmd);
-  // }
+  // String cmd = "S,{10},{10},{10},{0.5}\n";
+  // parseCommand(cmd);
+  if (Serial.available()) {
+    // String cmd = "S,{15},{15},{15},{0.5}\n"
+    String cmd = Serial.readStringUntil('\n');
+    parseCommand(cmd);
+  }
 }
 
 void parseCommand(String cmd) {
@@ -40,14 +40,14 @@ void parseCommand(String cmd) {
   // Single move (legacy)
   else if (cmd.startsWith("M")) {
     int id, angle, time_ms;
-    sscanf(cmd.c_str(), "M,%d,%d,%d", &id, &angle, &time_ms);
+    sscanf(cmd.c_str(), "M,%d,%f,%d", &id, &angle, &time_ms);
     moveServoTimed(id, angle, time_ms);
   }
 
   // ===== SYNC MOVE =====
   else if (cmd.startsWith("S")) {
     int a1, a2, a3, time_ms;
-    sscanf(cmd.c_str(), "S,%d,%d,%d,%d", &a1, &a2, &a3, &time_ms);
+    sscanf(cmd.c_str(), "S,%f,%f,%f,%d", &a1, &a2, &a3, &time_ms);
 
     Serial.print("SYNC: ");
     Serial.print(a1); Serial.print(", ");

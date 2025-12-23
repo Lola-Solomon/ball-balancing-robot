@@ -65,6 +65,8 @@ class USBCamera:
                 # Swap axes to match platform coordinates
                 #x_centered, y_centered = -y_centered, x_centered
 
+                x_centered = -x_centered
+
                 return int(x_centered), int(y_centered), int(area)
 
         return -1, -1, 0
@@ -74,32 +76,51 @@ class USBCamera:
         cv2.destroyAllWindows()
 
 
-# ================= MAIN LOOP =================       #for testing
-# cam = USBCamera()  # <-- USB Rapoo camera
+# ================= MAIN LOOP =================
+cam = USBCamera()  # <-- USB Rapoo camera
 
-# print("Press 'q' to quit")
+print("Press 'q' to quit")
 
-# while True:
-#     frame = cam.take_pic()
-#     if frame is None:
-#         continue
+while True:
+    frame = cam.take_pic()
+    if frame is None:
+        continue
 
-#     x, y, area = cam.find_ball(frame)
+    x, y, area = cam.find_ball(frame)
+    if(x==-1 or y==-1):
+        print("ball lost")
 
-#     # Draw image center
-#     cx = cam.width // 2
-#     cy = cam.height // 2
-#     cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
+    # Draw image center
+    cx = cam.height // 2
+    cy = cam.width // 2
+    center=(cy,cx)
+    cv2.circle(frame, (cy, cx), 5, (255, 0, 0), -1)
+    axis_length=150
+    x_cam = (center[0] + axis_length, center[1])
 
-#     # Show video
-#     cv2.imshow("Red Ball Tracking", frame)
+# Y camera axis (down)
+    y_cam = (center[0], center[1] + axis_length)
 
-#     # Print ball coordinates
-#     if area > 0:
-#         print(f"Ball position (centered): x={x}, y={y}, area={area}")
+    cv2.arrowedLine(frame, center, x_cam, (0, 0, 255), 2)   # Red
+    cv2.arrowedLine(frame, center, y_cam, (0, 255, 0), 2)   # Green
 
-#     # Exit
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         break
+    cv2.putText(frame, "X_cam", (x_cam[0] + 5, x_cam[1]),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 2)
 
-# cam.clean_up_cam()
+    cv2.putText(frame, "Y_cam", (y_cam[0] + 5, y_cam[1]),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+
+    # Show video
+    cv2.imshow("Red Ball Tracking", frame)
+
+    # Print ball coordinates
+    if area > 0:
+        print(f"Ball position (centered): x={x}, y={y}, area={area}")
+
+    # Exit
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+    
+
+cam.clean_up_cam()

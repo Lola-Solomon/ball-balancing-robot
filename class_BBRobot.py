@@ -130,7 +130,7 @@ class BBrobot:
         n = [x, y, z]
         angles = self.kinema_inv(n, Pz)
 
-        angles = [int(angles[0])+14, int(angles[1])+11, int(angles[2])]
+        angles = [int(angles[0])+9, int(angles[1])+11, int(angles[2])+1]
         self.servos.control_time_rotate_sync(angles, t)
 
         print("phi: ",phi)
@@ -147,9 +147,9 @@ class BBrobot:
 test_pos = BBrobot([1,2,3])
 test_pos.set_up()
 test_pos.Initialize_posture()
+# time.sleep(0.05)
 
-
-# test_pos.control_t_posture([0,15,0.11],2)    # ball must stay still
+# test_pos.control_t_posture([0,2.9,0.11],0.05)    # ball must stay still
 #test_pos.control_t_posture([0,0,0.11],3)
 # test_pos.control_t_posture([0,2,0.11],3)
 # test_pos.control_t_posture([0,0,0.11],3)
@@ -178,5 +178,5 @@ test_pos.Initialize_posture()
 #     # time.sleep(2)
 
 # for i in range(0,360):
-#     test_pos.control_t_posture([i,15,0.12],0.05)
-#     # time.sleep(2)
+#     test_pos.control_t_posture([i,15,0.11],0.001)
+#     time.sleep(0.1)

@@ -62,18 +62,17 @@ class ArduinoServo:
 
 # time.sleep(0.3)
 
-# test_angle = 30
+# test_angle = 2
 
 # # IMPORTANT: int angles only
 # # sync_angles = [test_angle+14, test_angle+11, test_angle+1]
-# sync_angles = [test_angle+14, 0, 0]
-# test_servo.control_time_rotate_sync(sync_angles, 1.0)
-# sync_angles = [0, 0, 0]
-# test_servo.control_time_rotate_sync(sync_angles, 1.0)
-# sync_angles = [test_angle+14, 0, 0]
-# test_servo.control_time_rotate_sync(sync_angles, 1.0)
-# sync_angles = [0, 0, 0]
+# # sync_angles = [test_angle+14, 0, 0]
+# # test_servo.control_time_rotate_sync(sync_angles, 1.0)
+# # sync_angles = [0, 0, 0]
+# # test_servo.control_time_rotate_sync(sync_angles, 1.0)
+# # sync_angles = [test_angle+14, 0, 0]
+# # test_servo.control_time_rotate_sync(sync_angles, 1.0)
+# sync_angles = [1, 2, 1]
 
 # test_servo.control_time_rotate_sync(sync_angles, 1.0)
-
 

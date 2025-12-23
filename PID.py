@@ -29,6 +29,8 @@ class pid:
             return 0,0
         
         dt=(current_time - self.last_time)
+        dt = max(dt, 1e-3)
+
         #proportional error
         error_x=goal[0]-current_value[0]
         error_y=goal[1]-current_value[1]
